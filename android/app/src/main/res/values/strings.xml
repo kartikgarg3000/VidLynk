@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">VidLynk</string>
+    <string name="loading_video">Loading stream…</string>
+    <string name="video_error">Unable to load video. Please check your connection.</string>
+    <string name="retry">Retry</string>
+    <string name="history_title">Recent Streams</string>
+    <string name="no_history">No watched streams yet. Tap a VidLynk link in Telegram, WhatsApp, or browser to start streaming!</string>
+</resources>

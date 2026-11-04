@@ -1,0 +1,38 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Admin {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Video {
+  id           String   @id @default(uuid())
+  slug         String   @unique // Short unique key for deep links: vidlynk.app/watch/:slug
+  title        String
+  description  String?
+  duration     Int      @default(0) // Duration in seconds
+  thumbnailUrl String?
+  videoUrl     String   // Public Cloudflare R2 / CDN Stream URL
+  storageKey   String   // R2 Bucket key
+  mimeType     String   @default("video/mp4")
+  resolution   String?  // e.g. "1080p", "720p"
+  sizeBytes    BigInt   @default(0)
+  viewsCount   Int      @default(0)
+  isPublished  Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isPublished, createdAt(sort: Desc)])
+}

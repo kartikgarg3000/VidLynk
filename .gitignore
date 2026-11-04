@@ -1,0 +1,71 @@
+# ====================================================================
+# VidLynk Master GitIgnore
+# ====================================================================
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+[Dd]esktop.ini
+
+# Environment variables & secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# ====================================================================
+# Backend (Node.js & TypeScript)
+# ====================================================================
+backend/node_modules/
+backend/dist/
+backend/uploads/
+backend/.env
+backend/npm-debug.log*
+backend/yarn-debug.log*
+backend/yarn-error.log*
+backend/pnpm-debug.log*
+
+# ====================================================================
+# Android & Gradle
+# ====================================================================
+*.iml
+.gradle/
+/local.properties
+/.idea/
+.idea/
+.navigation/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+output-metadata.json
+
+# Built application files
+build/
+*/build/
+android/.gradle/
+android/build/
+android/app/build/
+
+# Keystore files
+*.jks
+*.keystore
+
+# Google Services / Crashlytics
+google-services.json
+crashlytics.properties
+
+# ====================================================================
+# IDEs and Editors
+# ====================================================================
+.vscode/
+*.swp
+*.swo
+*~

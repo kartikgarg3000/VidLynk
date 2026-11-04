@@ -1,0 +1,8 @@
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="dark_surface">#FF121212</color>
+    <color name="primary_neon">#FF00E5FF</color>
+    <color name="primary_accent">#FF7C4DFF</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>
+
