@@ -30,7 +30,8 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    // ComponentActivity (Activity 1.9+) changed signature: no parameter
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         // Passes new deep link intent when app is already in the backstack
         setIntent(intent)

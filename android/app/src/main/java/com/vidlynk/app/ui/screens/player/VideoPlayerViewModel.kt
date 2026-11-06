@@ -6,6 +6,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vidlynk.app.core.ads.AdMobManager
+import com.vidlynk.app.data.model.VideoDto
 import com.vidlynk.app.data.repository.VideoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,6 +32,7 @@ class VideoPlayerViewModel @Inject constructor(
     }
 
     fun preloadAds(context: Context) {
+        // Pre-load both pre-roll and exit interstitial ads simultaneously
         adMobManager.loadInterstitialAd(context)
     }
 
@@ -41,7 +43,8 @@ class VideoPlayerViewModel @Inject constructor(
             val result = repository.getVideoBySlug(slug)
 
             result.onSuccess { video ->
-                _uiState.value = PlayerUiState.Success(
+                // Move to PreRollAd state — wait for ad before playing
+                _uiState.value = PlayerUiState.PreRollAd(
                     video = video,
                     initialPositionMs = savedPos
                 )
@@ -50,6 +53,22 @@ class VideoPlayerViewModel @Inject constructor(
                     message = error.localizedMessage ?: "Failed to load stream"
                 )
             }
+        }
+    }
+
+    /**
+     * Called when the PreRollAd composable is ready to show the interstitial.
+     * Shows the ad if loaded, then immediately transitions to Success (playback) state.
+     */
+    fun showPreRollAd(activity: Activity, video: VideoDto, initialPositionMs: Long) {
+        adMobManager.showInterstitialAd(activity) {
+            // After ad dismissed or if no ad ready → start video
+            _uiState.value = PlayerUiState.Success(
+                video = video,
+                initialPositionMs = initialPositionMs
+            )
+            // Pre-load next ad (exit interstitial) in background
+            adMobManager.loadInterstitialAd(activity)
         }
     }
 
