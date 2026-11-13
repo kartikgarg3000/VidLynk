@@ -1,6 +1,7 @@
 package com.vidlynk.app.ui.screens.player
 
 import android.app.Activity
+import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.view.ViewGroup
@@ -42,6 +43,7 @@ import com.vidlynk.app.ui.screens.player.components.DoubleTapSeekIndicator
 import com.vidlynk.app.ui.screens.player.components.PlaybackSpeedBottomSheet
 import com.vidlynk.app.ui.screens.player.components.PlayerControlsOverlay
 import com.vidlynk.app.ui.screens.player.components.SeekDirection
+import com.vidlynk.app.util.ShareUtils
 import com.vidlynk.app.ui.screens.player.components.SeekFeedback
 import com.vidlynk.app.ui.theme.DeepBlack
 import com.vidlynk.app.ui.theme.ElectricPurple
@@ -58,6 +60,7 @@ fun VideoPlayerScreen(
 ) {
     val context = LocalContext.current
     val activity = context as? Activity
+    val coroutineScope = rememberCoroutineScope()
     val view = LocalView.current
     val configuration = LocalConfiguration.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -432,6 +435,18 @@ fun VideoPlayerScreen(
                                     ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
                                 }
                             }
+                            controlsTimeoutKey++
+                        },
+                        onShareClick = {
+                            val shareUrl = state.video.shareUrl ?: "https://vidlynk-production.up.railway.app/watch/${state.video.slug}"
+                            ShareUtils.shareVideoPost(
+                                context = context,
+                                title = state.video.title,
+                                slug = state.video.slug,
+                                shareUrl = shareUrl,
+                                thumbnailUrl = state.video.thumbnailUrl,
+                                coroutineScope = coroutineScope
+                            )
                             controlsTimeoutKey++
                         },
                         onBackClick = {

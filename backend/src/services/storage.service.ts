@@ -52,7 +52,8 @@ export class StorageService {
     await fs.promises.writeFile(filePath, buffer);
 
     const host = hostHeader || `localhost:${config.port}`;
-    return `http://${host}/uploads/${key}`;
+    const proto = (host.includes('localhost') || host.includes('127.0.0.1')) ? 'http' : 'https';
+    return `${proto}://${host}/uploads/${key}`;
   }
 
   /**

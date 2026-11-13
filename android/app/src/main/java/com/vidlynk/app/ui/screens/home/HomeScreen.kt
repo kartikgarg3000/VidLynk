@@ -1,5 +1,6 @@
 package com.vidlynk.app.ui.screens.home
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -8,12 +9,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -22,6 +25,7 @@ import com.vidlynk.app.data.local.WatchHistoryEntity
 import com.vidlynk.app.ui.theme.DarkSurfaceElevated
 import com.vidlynk.app.ui.theme.DeepBlack
 import com.vidlynk.app.ui.theme.NeonCyan
+import com.vidlynk.app.util.ShareUtils
 
 @Composable
 fun HomeScreen(
@@ -30,6 +34,8 @@ fun HomeScreen(
 ) {
     val historyList by viewModel.historyFlow.collectAsState(initial = emptyList())
     var inputUrl by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -126,7 +132,21 @@ fun HomeScreen(
                     .padding(horizontal = 16.dp)
             ) {
                 items(historyList, key = { it.slug }) { item ->
-                    WatchHistoryCard(item = item, onClick = { onVideoSelected(item.slug) })
+                    WatchHistoryCard(
+                        item = item,
+                        onClick = { onVideoSelected(item.slug) },
+                        onShare = {
+                            val shareUrl = "https://vidlynk-production.up.railway.app/watch/${item.slug}"
+                            ShareUtils.shareVideoPost(
+                                context = context,
+                                title = item.title,
+                                slug = item.slug,
+                                shareUrl = shareUrl,
+                                thumbnailUrl = item.thumbnailUrl,
+                                coroutineScope = coroutineScope
+                            )
+                        }
+                    )
                     Spacer(modifier = Modifier.height(10.dp))
                 }
             }
@@ -138,7 +158,11 @@ fun HomeScreen(
 }
 
 @Composable
-fun WatchHistoryCard(item: WatchHistoryEntity, onClick: () -> Unit) {
+fun WatchHistoryCard(
+    item: WatchHistoryEntity,
+    onClick: () -> Unit,
+    onShare: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -169,6 +193,13 @@ fun WatchHistoryCard(item: WatchHistoryEntity, onClick: () -> Unit) {
                 text = "Resume at: ${formatDuration(item.lastPositionMs)}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray
+            )
+        }
+        IconButton(onClick = onShare) {
+            Icon(
+                imageVector = Icons.Default.Share,
+                contentDescription = "Share Post",
+                tint = NeonCyan
             )
         }
     }

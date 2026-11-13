@@ -43,6 +43,7 @@ fun PlayerControlsOverlay(
     onSpeedClick: () -> Unit,
     onAspectRatioToggle: () -> Unit,
     onFullscreenToggle: () -> Unit,
+    onShareClick: () -> Unit,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -110,7 +111,7 @@ fun PlayerControlsOverlay(
                         onClick = onSpeedClick,
                         shape = RoundedCornerShape(16.dp),
                         color = Color.White.copy(alpha = 0.15f),
-                        modifier = Modifier.padding(start = 4.dp, end = 4.dp)
+                        modifier = Modifier.padding(start = 4.dp, end = 2.dp)
                     ) {
                         Text(
                             text = if (playbackSpeed == 1.0f) "1x" else "${playbackSpeed}x",
@@ -118,6 +119,15 @@ fun PlayerControlsOverlay(
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                        )
+                    }
+
+                    // Share button
+                    IconButton(onClick = onShareClick) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = "Share",
+                            tint = Color.White
                         )
                     }
                 }

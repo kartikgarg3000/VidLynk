@@ -31,6 +31,9 @@ export const createApp = () => {
   // Static uploads serving for local testing
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
+  // Public Web Watch & OpenGraph Preview for Telegram/WhatsApp
+  app.get('/watch/:slug', VideoController.renderWatchPage);
+
   // Android App Links verification route
   app.get('/.well-known/assetlinks.json', VideoController.getAssetLinks);
 

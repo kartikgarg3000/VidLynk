@@ -149,9 +149,9 @@
           <div>
             <h2 class="text-xl font-bold text-white flex items-center space-x-2">
               <i data-lucide="upload-cloud" class="w-5 h-5 text-neon"></i>
-              <span>Upload Video & Generate Share Link</span>
+              <span>Upload Video & Generate Telegram Post</span>
             </h2>
-            <p class="text-xs text-gray-400 mt-1">Upload `.mp4` video. Users will stream instantly when tapping the generated link in Telegram or WhatsApp.</p>
+            <p class="text-xs text-gray-400 mt-1">Upload `.mp4` video. VidLynk automatically extracts a crisp thumbnail frame and formats a ready-to-paste viral post!</p>
           </div>
         </div>
 
@@ -164,7 +164,7 @@
               <i data-lucide="film" class="w-7 h-7"></i>
             </div>
             <p id="dropzoneText" class="text-sm font-semibold text-white">Drag & drop video here, or <span class="text-neon underline">browse</span></p>
-            <p class="text-xs text-gray-500 mt-1">MP4, WebM or MKV up to 500MB</p>
+            <p class="text-xs text-gray-500 mt-1">MP4, WebM or MKV up to 500MB • Auto-extracts thumbnail</p>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -184,7 +184,7 @@
           <!-- Upload Progress Bar (hidden by default) -->
           <div id="uploadProgressContainer" class="hidden space-y-2">
             <div class="flex items-center justify-between text-xs">
-              <span id="uploadStatusLabel" class="text-gray-400 font-medium">Uploading to Cloudflare R2...</span>
+              <span id="uploadStatusLabel" class="text-gray-400 font-medium">Uploading video & thumbnail to Cloudflare R2...</span>
               <span id="uploadPercentage" class="text-neon font-bold">0%</span>
             </div>
             <div class="w-full h-2 rounded-full bg-white/10 overflow-hidden">
@@ -195,25 +195,73 @@
           <button type="submit" id="submitUploadBtn"
             class="w-full py-3.5 px-6 rounded-xl font-bold text-darkBg bg-neon hover:bg-neon/90 transition flex items-center justify-center space-x-2 text-sm shadow-lg shadow-neon/20">
             <i data-lucide="send" class="w-4 h-4"></i>
-            <span>Upload & Create Stream Link</span>
+            <span>Upload & Generate Viral Post</span>
           </button>
         </form>
 
         <!-- Success Result Banner (hidden by default) -->
-        <div id="uploadSuccessBanner" class="hidden mt-6 p-5 rounded-2xl bg-neon/10 border border-neon/30 text-white space-y-3">
-          <div class="flex items-center space-x-2 text-neon font-bold text-sm">
-            <i data-lucide="check-circle" class="w-5 h-5"></i>
-            <span>Video Published Successfully!</span>
+        <div id="uploadSuccessBanner" class="hidden mt-6 p-6 rounded-2xl bg-neon/10 border border-neon/30 text-white space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2 text-neon font-bold text-sm">
+              <i data-lucide="check-circle" class="w-5 h-5"></i>
+              <span>Video Published & Ready to Share!</span>
+            </div>
+            <span id="thumbStatusBadge" class="text-xs bg-purple/20 text-purple px-2.5 py-1 rounded-full font-semibold border border-purple/30">
+              📸 Thumbnail Attached
+            </span>
           </div>
-          <p class="text-xs text-gray-300">Share this link in Telegram or WhatsApp. Clicking it will launch the VidLynk app and play instantly:</p>
-          <div class="flex items-center space-x-2">
-            <input type="text" id="generatedShareUrl" readonly
-              class="flex-1 bg-darkBg px-3.5 py-2.5 rounded-xl text-neon text-sm font-mono border border-neon/30 focus:outline-none select-all" />
-            <button id="copyShareUrlBtn"
-              class="px-4 py-2.5 rounded-xl bg-neon text-darkBg font-bold text-xs hover:bg-neon/90 transition flex items-center space-x-1.5 shrink-0">
-              <i data-lucide="copy" class="w-4 h-4"></i>
-              <span id="copyBtnText">Copy Link</span>
-            </button>
+
+          <!-- Format 1: Direct Link -->
+          <div class="space-y-1.5">
+            <p class="text-xs text-gray-300 font-semibold uppercase tracking-wider">1. Direct Stream Link:</p>
+            <div class="flex items-center space-x-2">
+              <input type="text" id="generatedShareUrl" readonly
+                class="flex-1 bg-darkBg px-3.5 py-2.5 rounded-xl text-neon text-sm font-mono border border-neon/30 focus:outline-none select-all" />
+              <button id="copyShareUrlBtn"
+                class="px-4 py-2.5 rounded-xl bg-neon text-darkBg font-bold text-xs hover:bg-neon/90 transition flex items-center space-x-1.5 shrink-0">
+                <i data-lucide="copy" class="w-4 h-4"></i>
+                <span id="copyBtnText">Copy Link</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Format 2: Ready-to-Paste Viral Telegram/WhatsApp Message -->
+          <div class="space-y-1.5 pt-3 border-t border-white/10">
+            <p class="text-xs text-gray-300 font-semibold uppercase tracking-wider">2. Ready-to-Paste Telegram / WhatsApp Post:</p>
+            <textarea id="telegramPostText" rows="4" readonly
+              class="w-full bg-darkBg px-3.5 py-2.5 rounded-xl text-gray-200 text-xs font-mono border border-white/15 focus:outline-none resize-none select-all"></textarea>
+            <div class="flex flex-col sm:flex-row items-center gap-2 pt-1">
+              <button id="copyTelegramPostBtn"
+                class="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-purple text-white font-bold text-xs hover:bg-purple/90 transition flex items-center justify-center space-x-2 shadow-lg shadow-purple/20">
+                <i data-lucide="clipboard-copy" class="w-4 h-4"></i>
+                <span id="copyTelegramBtnText">📋 Copy Telegram Post Text</span>
+              </button>
+              <a id="shareTelegramDirectBtn" target="_blank"
+                class="w-full sm:w-auto py-2.5 px-5 rounded-xl bg-[#229ED9] text-white font-bold text-xs hover:bg-[#229ED9]/90 transition flex items-center justify-center space-x-2 shrink-0">
+                <i data-lucide="send" class="w-4 h-4"></i>
+                <span>Open in Telegram</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Format 3: Auto-Generated Post Preview Photo -->
+          <div id="thumbPreviewRow" class="hidden space-y-2 pt-3 border-t border-white/10">
+            <p class="text-xs text-gray-300 font-semibold uppercase tracking-wider">3. Attached Post Preview Image (Photo + Caption Format):</p>
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <img id="successThumbPreview" class="w-full sm:w-60 max-h-36 object-cover rounded-xl border border-white/20 shadow-lg" />
+              <div class="flex flex-col gap-2 w-full sm:w-auto">
+                <button id="downloadThumbBtn" type="button"
+                  class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition flex items-center justify-center space-x-2">
+                  <i data-lucide="download" class="w-4 h-4 text-neon"></i>
+                  <span>Download Post Image</span>
+                </button>
+                <button id="shareWithImageBtn" type="button"
+                  class="px-4 py-2.5 rounded-xl bg-neon text-darkBg font-bold text-xs hover:bg-neon/90 transition flex items-center justify-center space-x-2 shadow-lg shadow-neon/20">
+                  <i data-lucide="share-2" class="w-4 h-4"></i>
+                  <span>Share Photo + Text via System Share</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -380,6 +428,7 @@
     const dropzone = document.getElementById('dropzone');
     const videoFileInput = document.getElementById('videoFile');
     const dropzoneText = document.getElementById('dropzoneText');
+    let generatedThumbnailBlob = null;
 
     dropzone.addEventListener('click', () => videoFileInput.click());
     dropzone.addEventListener('dragover', (e) => {
@@ -404,12 +453,101 @@
       }
     });
 
+    let lastGeneratedThumbBlob = null;
+    let lastGeneratedThumbUrl = null;
+
     function handleFileSelected(file) {
-      dropzoneText.innerHTML = `<span class="text-neon font-bold">${file.name}</span> (${(file.size / (1024*1024)).toFixed(1)} MB)`;
+      dropzoneText.innerHTML = `<span class="text-neon font-bold">${file.name}</span> (${(file.size / (1024*1024)).toFixed(1)} MB) <span class="text-xs text-purple font-medium block mt-1">📸 Generating video screenshot preview...</span>`;
       const titleInput = document.getElementById('videoTitle');
       if (!titleInput.value) {
         titleInput.value = file.name.replace(/\.[^/.]+$/, "");
       }
+
+      // Auto-extract thumbnail frame or 3-panel collage in-browser
+      generatedThumbnailBlob = null;
+      lastGeneratedThumbBlob = null;
+      try {
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        video.src = URL.createObjectURL(file);
+        video.muted = true;
+        video.playsInline = true;
+
+        video.onloadedmetadata = () => {
+          const dur = video.duration || 4;
+          const isPortrait = (video.videoHeight > video.videoWidth);
+
+          if (!isPortrait) {
+            // Single high-resolution landscape frame at 25% of the video
+            video.currentTime = Math.min(2.0, dur / 3);
+            video.onseeked = () => {
+              try {
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.min(video.videoWidth || 1280, 1280);
+                canvas.height = Math.min(video.videoHeight || 720, 720);
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                canvas.toBlob((blob) => {
+                  generatedThumbnailBlob = blob;
+                  lastGeneratedThumbBlob = blob;
+                  lastGeneratedThumbUrl = URL.createObjectURL(blob);
+                  dropzoneText.innerHTML = `<span class="text-neon font-bold">${file.name}</span> (${(file.size / (1024*1024)).toFixed(1)} MB) <span class="text-xs text-emerald-400 font-semibold block mt-1">✓ HD Preview Frame Captured</span>`;
+                }, 'image/jpeg', 0.88);
+              } catch (e) {
+                console.warn('Thumbnail generation failed:', e);
+              }
+            };
+          } else {
+            // Vertical Reel/TikTok: Generate a 3-panel screenshot collage side-by-side
+            const panelW = 360;
+            const panelH = Math.round(panelW * (video.videoHeight / video.videoWidth));
+            const canvas = document.createElement('canvas');
+            canvas.width = panelW * 3 + 4;
+            canvas.height = panelH;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#090A0F';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const seekTimes = [dur * 0.2, dur * 0.5, dur * 0.8];
+            let currentStep = 0;
+
+            function captureNext() {
+              if (currentStep < 3) {
+                video.currentTime = seekTimes[currentStep];
+              } else {
+                canvas.toBlob((blob) => {
+                  generatedThumbnailBlob = blob;
+                  lastGeneratedThumbBlob = blob;
+                  lastGeneratedThumbUrl = URL.createObjectURL(blob);
+                  dropzoneText.innerHTML = `<span class="text-neon font-bold">${file.name}</span> (${(file.size / (1024*1024)).toFixed(1)} MB) <span class="text-xs text-emerald-400 font-semibold block mt-1">✓ 3-Panel Preview Collage Captured</span>`;
+                }, 'image/jpeg', 0.88);
+              }
+            }
+
+            video.onseeked = () => {
+              try {
+                const x = currentStep * (panelW + 2);
+                ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, x, 0, panelW, panelH);
+                currentStep++;
+                captureNext();
+              } catch (e) {
+                console.warn('Collage step failed:', e);
+              }
+            };
+
+            captureNext();
+          }
+        };
+      } catch (err) {
+        console.warn('Video element error:', err);
+      }
+    }
+
+    // Viral Telegram Post Generator
+    function formatTelegramPost(title, shareUrl) {
+      return `🌀 Open link & watch online + download 👇
+${shareUrl}
+👁️👀 Tap link to start instant streaming 👇👇✅`;
     }
 
     // Video Upload with XMLHttpRequest Progress
@@ -421,6 +559,9 @@
     const uploadSuccessBanner = document.getElementById('uploadSuccessBanner');
     const generatedShareUrl = document.getElementById('generatedShareUrl');
     const copyShareUrlBtn = document.getElementById('copyShareUrlBtn');
+    const telegramPostText = document.getElementById('telegramPostText');
+    const copyTelegramPostBtn = document.getElementById('copyTelegramPostBtn');
+    const shareTelegramDirectBtn = document.getElementById('shareTelegramDirectBtn');
 
     uploadForm.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -434,6 +575,9 @@
       formData.append('video', file);
       formData.append('title', title);
       if (description) formData.append('description', description);
+      if (generatedThumbnailBlob) {
+        formData.append('thumbnail', generatedThumbnailBlob, 'thumbnail.jpg');
+      }
 
       submitUploadBtn.disabled = true;
       submitUploadBtn.classList.add('opacity-50');
@@ -460,12 +604,33 @@
         try {
           const resp = JSON.parse(xhr.responseText);
           if (xhr.status === 201 && resp.success && resp.data) {
-            generatedShareUrl.value = resp.data.shareUrl;
+            const shareUrl = resp.data.shareUrl;
+            generatedShareUrl.value = shareUrl;
+            
+            // Format ready-to-paste viral Telegram post
+            const postContent = formatTelegramPost(resp.data.title, shareUrl);
+            telegramPostText.value = postContent;
+
+            // Direct Telegram share link
+            const tgShareLink = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent("🌀 Open link & watch online + download 👇\n👁️👀 Tap link to start instant streaming 👇👇✅")}`;
+            shareTelegramDirectBtn.href = tgShareLink;
+
+            // Show preview image if generated
+            const thumbPreviewRow = document.getElementById('thumbPreviewRow');
+            const successThumbPreview = document.getElementById('successThumbPreview');
+            const previewSrc = lastGeneratedThumbUrl || resp.data.thumbnailUrl;
+            if (previewSrc) {
+              successThumbPreview.src = previewSrc;
+              thumbPreviewRow.classList.remove('hidden');
+            } else {
+              thumbPreviewRow.classList.add('hidden');
+            }
+
             uploadSuccessBanner.classList.remove('hidden');
             uploadForm.reset();
             dropzoneText.innerHTML = 'Drag & drop video here, or <span class="text-neon underline">browse</span>';
             loadDashboardData();
-            showToast('Video uploaded and stream link ready!');
+            showToast('Video uploaded with preview image! Share link ready.');
           } else {
             alert(resp.message || 'Upload failed');
           }
@@ -487,8 +652,72 @@
     copyShareUrlBtn.addEventListener('click', () => {
       generatedShareUrl.select();
       navigator.clipboard.writeText(generatedShareUrl.value);
-      showToast('Share link copied to clipboard!');
+      showToast('Raw link copied to clipboard!');
     });
+
+    copyTelegramPostBtn.addEventListener('click', () => {
+      telegramPostText.select();
+      navigator.clipboard.writeText(telegramPostText.value);
+      showToast('Viral Telegram post copied to clipboard!');
+    });
+
+    // Download Preview Image button
+    const downloadThumbBtn = document.getElementById('downloadThumbBtn');
+    if (downloadThumbBtn) {
+      downloadThumbBtn.addEventListener('click', () => {
+        const successThumbPreview = document.getElementById('successThumbPreview');
+        if (successThumbPreview && successThumbPreview.src) {
+          const a = document.createElement('a');
+          a.href = successThumbPreview.src;
+          a.download = `VidLynk_Post_Preview_${Date.now()}.jpg`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          showToast('Preview image downloaded! Attach it to your Telegram post.');
+        }
+      });
+    }
+
+    // Share with Image button (navigator.share)
+    const shareWithImageBtn = document.getElementById('shareWithImageBtn');
+    if (shareWithImageBtn) {
+      shareWithImageBtn.addEventListener('click', async () => {
+        const text = telegramPostText.value;
+        const title = document.getElementById('videoTitle').value || 'VidLynk Video';
+
+        if (lastGeneratedThumbBlob && navigator.canShare) {
+          try {
+            const file = new File([lastGeneratedThumbBlob], 'preview.jpg', { type: 'image/jpeg' });
+            if (navigator.canShare({ files: [file] })) {
+              await navigator.share({
+                title: title,
+                text: text,
+                files: [file]
+              });
+              return;
+            }
+          } catch (e) {
+            console.log('File sharing skipped or cancelled:', e);
+          }
+        }
+
+        // Fallback: Web Share without file or copy to clipboard
+        if (navigator.share) {
+          try {
+            await navigator.share({
+              title: title,
+              text: text,
+              url: generatedShareUrl.value
+            });
+          } catch (e) {
+            console.log('Share dismissed');
+          }
+        } else {
+          navigator.clipboard.writeText(text);
+          showToast('Text copied! Download image and post to Telegram.');
+        }
+      });
+    }
 
     // Load Videos & Stats
     async function loadDashboardData() {
@@ -520,14 +749,22 @@
       tbody.innerHTML = videos.map(video => `
         <tr class="hover:bg-white/[0.02] transition">
           <td class="py-3.5 px-4">
-            <div class="font-bold text-white">${escapeHtml(video.title)}</div>
-            <div class="text-xs text-neon font-mono mt-0.5">${video.slug}</div>
+            <div class="flex items-center space-x-3">
+              ${video.thumbnailUrl ? `<img src="${video.thumbnailUrl}" class="w-12 h-8 rounded object-cover border border-white/10 shrink-0" />` : `<div class="w-12 h-8 rounded bg-white/5 flex items-center justify-center shrink-0 text-gray-500"><i data-lucide="video" class="w-4 h-4"></i></div>`}
+              <div>
+                <div class="font-bold text-white max-w-xs truncate">${escapeHtml(video.title)}</div>
+                <div class="text-xs text-neon font-mono mt-0.5">${video.slug}</div>
+              </div>
+            </div>
           </td>
           <td class="py-3.5 px-4 font-semibold text-gray-200">${(video.viewsCount || 0).toLocaleString()}</td>
           <td class="py-3.5 px-4 text-xs text-gray-400">${formatBytes(video.sizeBytes)}</td>
           <td class="py-3.5 px-4 text-xs text-gray-400">${new Date(video.createdAt).toLocaleDateString()}</td>
-          <td class="py-3.5 px-4 text-right space-x-2">
-            <button onclick="copyLink('${video.shareUrl}')" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-neon hover:text-darkBg text-xs font-semibold text-gray-300 transition" title="Copy Link">
+          <td class="py-3.5 px-4 text-right space-x-1.5 whitespace-nowrap">
+            <button onclick="copyTelegramPost('${escapeHtml(video.title)}', '${video.shareUrl}')" class="px-2.5 py-1.5 rounded-lg bg-purple/20 hover:bg-purple text-purple hover:text-white text-xs font-semibold transition" title="Copy Telegram Post">
+              📋 Telegram Post
+            </button>
+            <button onclick="copyLink('${video.shareUrl}')" class="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-neon hover:text-darkBg text-xs font-semibold text-gray-300 transition" title="Copy Link">
               Copy Link
             </button>
             <button onclick="deleteVideo('${video.id}', '${video.title}')" class="p-1.5 rounded-lg text-red-400 hover:bg-red-500/10 transition" title="Delete">
@@ -542,6 +779,12 @@
     window.copyLink = function(url) {
       navigator.clipboard.writeText(url);
       showToast('Copied share link to clipboard!');
+    };
+
+    window.copyTelegramPost = function(title, shareUrl) {
+      const text = formatTelegramPost(title, shareUrl);
+      navigator.clipboard.writeText(text);
+      showToast('Copied Telegram post with emojis to clipboard!');
     };
 
     window.deleteVideo = async function(id, title) {

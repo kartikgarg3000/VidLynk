@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 
 async function main() {
   const email = 'admin@vidlynk.app';
-  const rawPassword = 'VidLynkAdmin2026!';
+  const rawPassword = 'hashindiahashindia';
   const passwordHash = await bcrypt.hash(rawPassword, 10);
 
   const admin = await prisma.admin.upsert({
