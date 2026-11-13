@@ -383,7 +383,6 @@ fun VideoPlayerScreen(
                         title = state.video.title,
                         currentPositionMs = currentPositionMs,
                         durationMs = durationMs,
-                        bufferedPositionMs = bufferedPositionMs,
                         playbackSpeed = playbackSpeed,
                         isZoomMode = isZoomMode,
                         isLandscape = isLandscape,

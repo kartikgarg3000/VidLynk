@@ -14,12 +14,19 @@ export const createApp = () => {
 
   // Security & logging
   app.use(helmet({
-    crossOriginResourcePolicy: { policy: 'cross-origin' }
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    contentSecurityPolicy: false
   }));
   app.use(cors({ origin: '*' }));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(morgan('combined'));
+
+  // Admin Web Portal (Single Page App)
+  app.use('/admin', express.static(path.join(process.cwd(), 'public/admin')));
+  app.get(['/admin', '/admin/*'], (req, res) => {
+    res.sendFile(path.join(process.cwd(), 'public/admin/index.html'));
+  });
 
   // Static uploads serving for local testing
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));

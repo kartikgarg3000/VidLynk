@@ -33,12 +33,12 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            buildConfigField("String", "BASE_URL", "\"https://api.vidlynk.app/api/v1/\"")
+            buildConfigField("String", "BASE_URL", "\"https://vidlynk-production.up.railway.app/api/v1/\"")
         }
         debug {
             isMinifyEnabled = false
             // Default to local server or dev backend
-            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:5000/api/v1/\"")
+            buildConfigField("String", "BASE_URL", "\"https://vidlynk-production.up.railway.app/api/v1/\"")
         }
     }
 

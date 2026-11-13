@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VidLynk Admin | Video Stream & Link Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            neon: '#00E5FF',
+            purple: '#7C4DFF',
+            darkBg: '#090A0F',
+            cardBg: '#12141C',
+            elevatedBg: '#1A1D28',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #090A0F; color: #E5E7EB; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .glass { background: rgba(18, 20, 28, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .glow-cyan { box-shadow: 0 0 25px rgba(0, 229, 255, 0.2); }
+    .glow-purple { box-shadow: 0 0 25px rgba(124, 77, 255, 0.2); }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- ==================== LOGIN VIEW ==================== -->
+  <div id="loginView" class="flex-1 flex items-center justify-center p-4">
+    <div class="glass w-full max-w-md p-8 rounded-2xl shadow-2xl relative overflow-hidden">
+      <div class="absolute -top-20 -left-20 w-40 h-40 bg-neon/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-20 -right-20 w-40 h-40 bg-purple/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-neon/10 text-neon mb-4 glow-cyan">
+          <i data-lucide="play" class="w-7 h-7 fill-neon"></i>
+        </div>
+        <h1 class="text-2xl font-extrabold text-white tracking-tight">Vid<span class="text-neon">Lynk</span> Portal</h1>
+        <p class="text-gray-400 text-sm mt-1">Admin Video Management & Stream Links</p>
+      </div>
+
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Admin Email</label>
+          <div class="relative">
+            <i data-lucide="mail" class="w-5 h-5 absolute left-3.5 top-3 text-gray-500"></i>
+            <input type="email" id="loginEmail" required placeholder="admin@domain.com"
+              class="w-full pl-11 pr-4 py-2.5 rounded-xl bg-elevatedBg border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-neon focus:ring-1 focus:ring-neon text-sm transition" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Password</label>
+          <div class="relative">
+            <i data-lucide="lock" class="w-5 h-5 absolute left-3.5 top-3 text-gray-500"></i>
+            <input type="password" id="loginPassword" required placeholder="••••••••••••"
+              class="w-full pl-11 pr-4 py-2.5 rounded-xl bg-elevatedBg border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-neon focus:ring-1 focus:ring-neon text-sm transition" />
+          </div>
+        </div>
+
+        <div id="loginError" class="hidden text-red-400 text-xs p-3 rounded-lg bg-red-500/10 border border-red-500/20"></div>
+
+        <button type="submit" id="loginBtn"
+          class="w-full py-3 px-4 rounded-xl font-bold text-darkBg bg-neon hover:bg-neon/90 transition duration-200 flex items-center justify-center space-x-2 text-sm shadow-lg shadow-neon/20">
+          <span>Sign In to Dashboard</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== DASHBOARD VIEW ==================== -->
+  <div id="dashboardView" class="hidden flex-1 flex flex-col">
+    <!-- Navbar -->
+    <header class="glass sticky top-0 z-30 border-b border-white/5">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 rounded-lg bg-neon/10 flex items-center justify-center text-neon">
+            <i data-lucide="play" class="w-5 h-5 fill-neon"></i>
+          </div>
+          <span class="font-extrabold text-xl tracking-tight text-white">Vid<span class="text-neon">Lynk</span></span>
+          <span class="text-xs px-2.5 py-0.5 rounded-full bg-neon/10 text-neon font-semibold border border-neon/20">Admin</span>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <span id="adminBadge" class="hidden sm:inline-block text-xs text-gray-400 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10"></span>
+          <button id="openProfileBtn" class="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-white/5 transition" title="Security & Password">
+            <i data-lucide="key" class="w-5 h-5"></i>
+          </button>
+          <button id="logoutBtn" class="text-red-400 hover:text-red-300 p-2 rounded-lg hover:bg-red-500/10 transition" title="Log Out">
+            <i data-lucide="log-out" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <!-- Stats Overview -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div class="glass p-5 rounded-2xl flex items-center space-x-4">
+          <div class="w-12 h-12 rounded-xl bg-neon/10 flex items-center justify-center text-neon">
+            <i data-lucide="video" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <p class="text-xs uppercase font-semibold text-gray-400 tracking-wider">Total Streams</p>
+            <h3 id="statTotalVideos" class="text-2xl font-extrabold text-white mt-0.5">--</h3>
+          </div>
+        </div>
+
+        <div class="glass p-5 rounded-2xl flex items-center space-x-4">
+          <div class="w-12 h-12 rounded-xl bg-purple/10 flex items-center justify-center text-purple">
+            <i data-lucide="eye" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <p class="text-xs uppercase font-semibold text-gray-400 tracking-wider">Total Views</p>
+            <h3 id="statTotalViews" class="text-2xl font-extrabold text-white mt-0.5">--</h3>
+          </div>
+        </div>
+
+        <div class="glass p-5 rounded-2xl flex items-center space-x-4">
+          <div class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+            <i data-lucide="cloud" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <p class="text-xs uppercase font-semibold text-gray-400 tracking-wider">Storage & CDN</p>
+            <h3 class="text-base font-bold text-emerald-400 mt-1 flex items-center space-x-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Cloudflare R2 Ready</span>
+            </h3>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upload Section -->
+      <div class="glass rounded-2xl p-6 sm:p-8 relative overflow-hidden">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+              <i data-lucide="upload-cloud" class="w-5 h-5 text-neon"></i>
+              <span>Upload Video & Generate Share Link</span>
+            </h2>
+            <p class="text-xs text-gray-400 mt-1">Upload `.mp4` video. Users will stream instantly when tapping the generated link in Telegram or WhatsApp.</p>
+          </div>
+        </div>
+
+        <form id="uploadForm" class="space-y-5">
+          <!-- Dropzone -->
+          <div id="dropzone"
+            class="border-2 border-dashed border-white/15 hover:border-neon rounded-2xl p-8 text-center cursor-pointer bg-white/[0.02] hover:bg-neon/[0.02] transition group">
+            <input type="file" id="videoFile" accept="video/mp4,video/mkv,video/webm" class="hidden" required />
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-white/5 group-hover:bg-neon/10 group-hover:text-neon flex items-center justify-center text-gray-400 transition mb-3">
+              <i data-lucide="film" class="w-7 h-7"></i>
+            </div>
+            <p id="dropzoneText" class="text-sm font-semibold text-white">Drag & drop video here, or <span class="text-neon underline">browse</span></p>
+            <p class="text-xs text-gray-500 mt-1">MP4, WebM or MKV up to 500MB</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Video Title *</label>
+              <input type="text" id="videoTitle" required placeholder="e.g. Viral Clip 2026"
+                class="w-full px-4 py-2.5 rounded-xl bg-elevatedBg border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-neon text-sm transition" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Description (Optional)</label>
+              <input type="text" id="videoDescription" placeholder="Optional notes or caption"
+                class="w-full px-4 py-2.5 rounded-xl bg-elevatedBg border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-neon text-sm transition" />
+            </div>
+          </div>
+
+          <!-- Upload Progress Bar (hidden by default) -->
+          <div id="uploadProgressContainer" class="hidden space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span id="uploadStatusLabel" class="text-gray-400 font-medium">Uploading to Cloudflare R2...</span>
+              <span id="uploadPercentage" class="text-neon font-bold">0%</span>
+            </div>
+            <div class="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+              <div id="uploadProgressBar" class="h-full bg-gradient-to-r from-neon to-purple w-0 transition-all duration-150"></div>
+            </div>
+          </div>
+
+          <button type="submit" id="submitUploadBtn"
+            class="w-full py-3.5 px-6 rounded-xl font-bold text-darkBg bg-neon hover:bg-neon/90 transition flex items-center justify-center space-x-2 text-sm shadow-lg shadow-neon/20">
+            <i data-lucide="send" class="w-4 h-4"></i>
+            <span>Upload & Create Stream Link</span>
+          </button>
+        </form>
+
+        <!-- Success Result Banner (hidden by default) -->
+        <div id="uploadSuccessBanner" class="hidden mt-6 p-5 rounded-2xl bg-neon/10 border border-neon/30 text-white space-y-3">
+          <div class="flex items-center space-x-2 text-neon font-bold text-sm">
+            <i data-lucide="check-circle" class="w-5 h-5"></i>
+            <span>Video Published Successfully!</span>
+          </div>
+          <p class="text-xs text-gray-300">Share this link in Telegram or WhatsApp. Clicking it will launch the VidLynk app and play instantly:</p>
+          <div class="flex items-center space-x-2">
+            <input type="text" id="generatedShareUrl" readonly
+              class="flex-1 bg-darkBg px-3.5 py-2.5 rounded-xl text-neon text-sm font-mono border border-neon/30 focus:outline-none select-all" />
+            <button id="copyShareUrlBtn"
+              class="px-4 py-2.5 rounded-xl bg-neon text-darkBg font-bold text-xs hover:bg-neon/90 transition flex items-center space-x-1.5 shrink-0">
+              <i data-lucide="copy" class="w-4 h-4"></i>
+              <span id="copyBtnText">Copy Link</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Videos Library -->
+      <div class="glass rounded-2xl p-6 sm:p-8">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+              <i data-lucide="list" class="w-5 h-5 text-neon"></i>
+              <span>Your Stream Library</span>
+            </h2>
+            <p class="text-xs text-gray-400 mt-1">All active videos and shareable slugs.</p>
+          </div>
+          <button id="refreshBtn" class="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition" title="Refresh list">
+            <i data-lucide="rotate-cw" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="border-b border-white/10 text-xs uppercase text-gray-400 font-semibold tracking-wider">
+                <th class="py-3.5 px-4">Title / Slug</th>
+                <th class="py-3.5 px-4">Views</th>
+                <th class="py-3.5 px-4">Size</th>
+                <th class="py-3.5 px-4">Uploaded</th>
+                <th class="py-3.5 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="videoTableBody" class="divide-y divide-white/5 text-gray-300">
+              <tr>
+                <td colspan="5" class="py-8 text-center text-gray-500">Loading your videos...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================== PROFILE / PASSWORD MODAL ==================== -->
+  <div id="profileModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+    <div class="glass w-full max-w-md p-6 rounded-2xl border border-white/10 shadow-2xl space-y-5">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+          <i data-lucide="shield" class="w-5 h-5 text-neon"></i>
+          <span>Change Admin Credentials</span>
+        </h3>
+        <button id="closeProfileModal" class="text-gray-400 hover:text-white p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="profileForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Current Password *</label>
+          <input type="password" id="currentPassword" required placeholder="Required to verify identity"
+            class="w-full px-4 py-2.5 rounded-xl bg-elevatedBg border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-neon text-sm transition" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">New Email (Optional)</label>
+          <input type="email" id="newEmail" placeholder="Leave blank to keep current"
+            class="w-full px-4 py-2.5 rounded-xl bg-elevatedBg border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-neon text-sm transition" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">New Password (Optional)</label>
+          <input type="password" id="newPassword" placeholder="Min 6 characters"
+            class="w-full px-4 py-2.5 rounded-xl bg-elevatedBg border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-neon text-sm transition" />
+        </div>
+
+        <div id="profileMessage" class="hidden text-xs p-3 rounded-lg"></div>
+
+        <button type="submit" id="saveProfileBtn"
+          class="w-full py-3 px-4 rounded-xl font-bold text-darkBg bg-neon hover:bg-neon/90 transition text-sm shadow-lg shadow-neon/20">
+          Save Credentials
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 hidden bg-cardBg border border-neon/40 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-2 text-sm transition-all duration-300">
+    <i data-lucide="check" class="w-4 h-4 text-neon"></i>
+    <span id="toastMessage">Link copied to clipboard!</span>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    const API_BASE = window.location.origin;
+    let authToken = localStorage.getItem('vidlynk_admin_token');
+    let adminData = JSON.parse(localStorage.getItem('vidlynk_admin_data') || 'null');
+
+    const loginView = document.getElementById('loginView');
+    const dashboardView = document.getElementById('dashboardView');
+    const loginForm = document.getElementById('loginForm');
+    const loginError = document.getElementById('loginError');
+    const adminBadge = document.getElementById('adminBadge');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMessage').textContent = msg;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+
+    function initAuth() {
+      if (authToken) {
+        loginView.classList.add('hidden');
+        dashboardView.classList.remove('hidden');
+        if (adminData) {
+          adminBadge.textContent = adminData.email;
+        }
+        loadDashboardData();
+      } else {
+        loginView.classList.remove('hidden');
+        dashboardView.classList.add('hidden');
+      }
+    }
+
+    // Login Form Submit
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      loginError.classList.add('hidden');
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (data.success && data.data) {
+          authToken = data.data.token;
+          adminData = data.data.admin;
+          localStorage.setItem('vidlynk_admin_token', authToken);
+          localStorage.setItem('vidlynk_admin_data', JSON.stringify(adminData));
+          initAuth();
+        } else {
+          loginError.textContent = data.message || 'Invalid credentials';
+          loginError.classList.remove('hidden');
+        }
+      } catch (err) {
+        loginError.textContent = 'Server connection error. Please try again.';
+        loginError.classList.remove('hidden');
+      }
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('vidlynk_admin_token');
+      localStorage.removeItem('vidlynk_admin_data');
+      authToken = null;
+      adminData = null;
+      initAuth();
+    });
+
+    // File Selection & Drag-and-drop
+    const dropzone = document.getElementById('dropzone');
+    const videoFileInput = document.getElementById('videoFile');
+    const dropzoneText = document.getElementById('dropzoneText');
+
+    dropzone.addEventListener('click', () => videoFileInput.click());
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('border-neon', 'bg-neon/[0.04]');
+    });
+    dropzone.addEventListener('dragleave', () => {
+      dropzone.classList.remove('border-neon', 'bg-neon/[0.04]');
+    });
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('border-neon', 'bg-neon/[0.04]');
+      if (e.dataTransfer.files.length) {
+        videoFileInput.files = e.dataTransfer.files;
+        handleFileSelected(videoFileInput.files[0]);
+      }
+    });
+
+    videoFileInput.addEventListener('change', () => {
+      if (videoFileInput.files.length) {
+        handleFileSelected(videoFileInput.files[0]);
+      }
+    });
+
+    function handleFileSelected(file) {
+      dropzoneText.innerHTML = `<span class="text-neon font-bold">${file.name}</span> (${(file.size / (1024*1024)).toFixed(1)} MB)`;
+      const titleInput = document.getElementById('videoTitle');
+      if (!titleInput.value) {
+        titleInput.value = file.name.replace(/\.[^/.]+$/, "");
+      }
+    }
+
+    // Video Upload with XMLHttpRequest Progress
+    const uploadForm = document.getElementById('uploadForm');
+    const submitUploadBtn = document.getElementById('submitUploadBtn');
+    const uploadProgressContainer = document.getElementById('uploadProgressContainer');
+    const uploadProgressBar = document.getElementById('uploadProgressBar');
+    const uploadPercentage = document.getElementById('uploadPercentage');
+    const uploadSuccessBanner = document.getElementById('uploadSuccessBanner');
+    const generatedShareUrl = document.getElementById('generatedShareUrl');
+    const copyShareUrlBtn = document.getElementById('copyShareUrlBtn');
+
+    uploadForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const file = videoFileInput.files[0];
+      const title = document.getElementById('videoTitle').value.trim();
+      const description = document.getElementById('videoDescription').value.trim();
+
+      if (!file || !title) return;
+
+      const formData = new FormData();
+      formData.append('video', file);
+      formData.append('title', title);
+      if (description) formData.append('description', description);
+
+      submitUploadBtn.disabled = true;
+      submitUploadBtn.classList.add('opacity-50');
+      uploadProgressContainer.classList.remove('hidden');
+      uploadSuccessBanner.classList.add('hidden');
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `${API_BASE}/api/v1/admin/videos/upload`);
+      xhr.setRequestHeader('Authorization', `Bearer ${authToken}`);
+
+      xhr.upload.onprogress = (evt) => {
+        if (evt.lengthComputable) {
+          const percent = Math.round((evt.loaded / evt.total) * 100);
+          uploadProgressBar.style.width = `${percent}%`;
+          uploadPercentage.textContent = `${percent}%`;
+        }
+      };
+
+      xhr.onload = () => {
+        submitUploadBtn.disabled = false;
+        submitUploadBtn.classList.remove('opacity-50');
+        uploadProgressContainer.classList.add('hidden');
+
+        try {
+          const resp = JSON.parse(xhr.responseText);
+          if (xhr.status === 201 && resp.success && resp.data) {
+            generatedShareUrl.value = resp.data.shareUrl;
+            uploadSuccessBanner.classList.remove('hidden');
+            uploadForm.reset();
+            dropzoneText.innerHTML = 'Drag & drop video here, or <span class="text-neon underline">browse</span>';
+            loadDashboardData();
+            showToast('Video uploaded and stream link ready!');
+          } else {
+            alert(resp.message || 'Upload failed');
+          }
+        } catch (err) {
+          alert('Upload failed: Invalid server response');
+        }
+      };
+
+      xhr.onerror = () => {
+        submitUploadBtn.disabled = false;
+        submitUploadBtn.classList.remove('opacity-50');
+        uploadProgressContainer.classList.add('hidden');
+        alert('Network error while uploading video');
+      };
+
+      xhr.send(formData);
+    });
+
+    copyShareUrlBtn.addEventListener('click', () => {
+      generatedShareUrl.select();
+      navigator.clipboard.writeText(generatedShareUrl.value);
+      showToast('Share link copied to clipboard!');
+    });
+
+    // Load Videos & Stats
+    async function loadDashboardData() {
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/admin/videos`, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        const data = await res.json();
+        if (data.success && data.data) {
+          renderTable(data.data.videos);
+          document.getElementById('statTotalVideos').textContent = data.data.total;
+          const totalViews = data.data.videos.reduce((acc, v) => acc + (v.viewsCount || 0), 0);
+          document.getElementById('statTotalViews').textContent = totalViews.toLocaleString();
+        }
+      } catch (e) {
+        console.error('Failed to load videos:', e);
+      }
+    }
+
+    document.getElementById('refreshBtn').addEventListener('click', loadDashboardData);
+
+    function renderTable(videos) {
+      const tbody = document.getElementById('videoTableBody');
+      if (!videos.length) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-gray-500">No videos uploaded yet. Upload your first clip above!</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = videos.map(video => `
+        <tr class="hover:bg-white/[0.02] transition">
+          <td class="py-3.5 px-4">
+            <div class="font-bold text-white">${escapeHtml(video.title)}</div>
+            <div class="text-xs text-neon font-mono mt-0.5">${video.slug}</div>
+          </td>
+          <td class="py-3.5 px-4 font-semibold text-gray-200">${(video.viewsCount || 0).toLocaleString()}</td>
+          <td class="py-3.5 px-4 text-xs text-gray-400">${formatBytes(video.sizeBytes)}</td>
+          <td class="py-3.5 px-4 text-xs text-gray-400">${new Date(video.createdAt).toLocaleDateString()}</td>
+          <td class="py-3.5 px-4 text-right space-x-2">
+            <button onclick="copyLink('${video.shareUrl}')" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-neon hover:text-darkBg text-xs font-semibold text-gray-300 transition" title="Copy Link">
+              Copy Link
+            </button>
+            <button onclick="deleteVideo('${video.id}', '${video.title}')" class="p-1.5 rounded-lg text-red-400 hover:bg-red-500/10 transition" title="Delete">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    window.copyLink = function(url) {
+      navigator.clipboard.writeText(url);
+      showToast('Copied share link to clipboard!');
+    };
+
+    window.deleteVideo = async function(id, title) {
+      if (!confirm(`Are you sure you want to delete "${title}"? This cannot be undone.`)) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/admin/videos/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Video deleted');
+          loadDashboardData();
+        } else {
+          alert(data.message || 'Delete failed');
+        }
+      } catch (e) {
+        alert('Network error while deleting video');
+      }
+    };
+
+    // Profile & Credentials Modal
+    const profileModal = document.getElementById('profileModal');
+    const openProfileBtn = document.getElementById('openProfileBtn');
+    const closeProfileModal = document.getElementById('closeProfileModal');
+    const profileForm = document.getElementById('profileForm');
+    const profileMessage = document.getElementById('profileMessage');
+
+    openProfileBtn.addEventListener('click', () => {
+      profileMessage.classList.add('hidden');
+      profileForm.reset();
+      profileModal.classList.remove('hidden');
+    });
+
+    closeProfileModal.addEventListener('click', () => {
+      profileModal.classList.add('hidden');
+    });
+
+    profileForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      profileMessage.classList.add('hidden');
+
+      const currentPassword = document.getElementById('currentPassword').value;
+      const newEmail = document.getElementById('newEmail').value.trim();
+      const newPassword = document.getElementById('newPassword').value;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/admin/profile`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({ currentPassword, newEmail: newEmail || undefined, newPassword: newPassword || undefined })
+        });
+        const data = await res.json();
+        if (data.success) {
+          profileMessage.className = 'text-xs p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400';
+          profileMessage.textContent = 'Credentials updated successfully!';
+          profileMessage.classList.remove('hidden');
+          if (newEmail) {
+            adminData.email = newEmail;
+            localStorage.setItem('vidlynk_admin_data', JSON.stringify(adminData));
+            adminBadge.textContent = newEmail;
+          }
+          setTimeout(() => profileModal.classList.add('hidden'), 2000);
+        } else {
+          profileMessage.className = 'text-xs p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400';
+          profileMessage.textContent = data.message || 'Update failed';
+          profileMessage.classList.remove('hidden');
+        }
+      } catch (err) {
+        profileMessage.className = 'text-xs p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400';
+        profileMessage.textContent = 'Connection error';
+        profileMessage.classList.remove('hidden');
+      }
+    });
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function formatBytes(bytes) {
+      if (!bytes || bytes === '0') return '0 MB';
+      const b = parseInt(bytes, 10);
+      return (b / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    initAuth();
+  </script>
+</body>
+</html>

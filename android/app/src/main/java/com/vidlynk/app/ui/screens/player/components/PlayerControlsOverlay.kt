@@ -33,7 +33,6 @@ fun PlayerControlsOverlay(
     title: String,
     currentPositionMs: Long,
     durationMs: Long,
-    bufferedPositionMs: Long,
     playbackSpeed: Float,
     isZoomMode: Boolean,
     isLandscape: Boolean,
