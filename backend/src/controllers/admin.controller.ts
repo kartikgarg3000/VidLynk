@@ -2,6 +2,9 @@ import { Request, Response } from 'express';
 import { StorageService } from '../services/storage.service';
 import { VideoService } from '../services/video.service';
 import { nanoid } from 'nanoid';
+import { AuthenticatedRequest } from '../middlewares/auth.middleware';
+import { prisma } from '../config/prisma';
+import bcrypt from 'bcrypt';
 
 export class AdminController {
   /**
@@ -124,5 +127,72 @@ export class AdminController {
       return res.status(500).json({ success: false, message: error.message });
     }
   }
-}
 
+  /**
+   * Change admin email and password securely
+   */
+  static async updateCredentials(req: AuthenticatedRequest, res: Response) {
+    try {
+      const adminId = req.admin?.id;
+      if (!adminId) {
+        return res.status(401).json({ success: false, message: 'Unauthorized' });
+      }
+
+      const { currentPassword, newEmail, newPassword, newName } = req.body;
+
+      if (!currentPassword) {
+        return res.status(400).json({
+          success: false,
+          message: 'Current password is required to verify identity',
+        });
+      }
+
+      const admin = await prisma.admin.findUnique({ where: { id: adminId } });
+      if (!admin) {
+        return res.status(404).json({ success: false, message: 'Admin not found' });
+      }
+
+      const isMatch = await bcrypt.compare(currentPassword, admin.passwordHash);
+      if (!isMatch) {
+        return res.status(401).json({ success: false, message: 'Incorrect current password' });
+      }
+
+      const updateData: any = {};
+
+      if (newEmail && newEmail.trim() !== '') {
+        const trimmedEmail = newEmail.trim().toLowerCase();
+        const existing = await prisma.admin.findUnique({ where: { email: trimmedEmail } });
+        if (existing && existing.id !== adminId) {
+          return res.status(400).json({ success: false, message: 'Email already in use by another account' });
+        }
+        updateData.email = trimmedEmail;
+      }
+
+      if (newPassword) {
+        if (newPassword.length < 6) {
+          return res.status(400).json({ success: false, message: 'New password must be at least 6 characters' });
+        }
+        updateData.passwordHash = await bcrypt.hash(newPassword, 10);
+      }
+
+      if (newName && newName.trim() !== '') {
+        updateData.name = newName.trim();
+      }
+
+      const updated = await prisma.admin.update({
+        where: { id: adminId },
+        data: updateData,
+        select: { id: true, email: true, name: true, updatedAt: true },
+      });
+
+      return res.json({
+        success: true,
+        message: 'Admin credentials updated successfully. Please use your new email and password for future logins.',
+        data: updated,
+      });
+    } catch (error: any) {
+      console.error('Error updating admin credentials:', error);
+      return res.status(500).json({ success: false, message: error.message });
+    }
+  }
+}

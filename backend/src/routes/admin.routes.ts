@@ -8,6 +8,9 @@ const router = Router();
 // Protect all admin routes with JWT
 router.use(requireAdminAuth);
 
+// Update admin credentials (email, password, name)
+router.put('/profile', AdminController.updateCredentials);
+
 router.post(
   '/videos/upload',
   uploadMedia.fields([
@@ -21,4 +24,3 @@ router.get('/videos', AdminController.getVideos);
 router.delete('/videos/:id', AdminController.deleteVideo);
 
 export default router;
-
