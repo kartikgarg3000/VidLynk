@@ -3,3 +3,4 @@
     <cache-path name="shared_thumbnails" path="shared_thumbnails/" />
     <cache-path name="cache_root" path="." />
 </paths>
+

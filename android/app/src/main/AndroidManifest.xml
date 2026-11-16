@@ -64,6 +64,26 @@
                     android:host="watch" />
             </intent-filter>
 
+            <!-- Railway Live Domain Deep Links from Telegram / Browser -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="vidlynk-production.up.railway.app"
+                    android:pathPrefix="/watch/" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="http"
+                    android:host="vidlynk-production.up.railway.app"
+                    android:pathPrefix="/watch/" />
+            </intent-filter>
+
         </activity>
 
         <!-- FileProvider for securely sharing video thumbnails/images with Telegram, WhatsApp, etc. -->

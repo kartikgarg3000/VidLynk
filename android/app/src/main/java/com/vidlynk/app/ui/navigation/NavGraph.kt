@@ -23,27 +23,40 @@ fun VidLynkNavGraph(
         navController = navController,
         startDestination = startDestination
     ) {
-        // Home Screen
-        composable(Screen.Home.route) {
+        // Home Screen with Deep Links (Tapping Telegram link opens Home Screen with video hero & floating ad)
+        composable(
+            route = Screen.Home.route,
+            arguments = listOf(
+                navArgument("slug") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                }
+            ),
+            deepLinks = listOf(
+                navDeepLink { uriPattern = "https://vidlynk.app/watch/{slug}" },
+                navDeepLink { uriPattern = "http://vidlynk.app/watch/{slug}" },
+                navDeepLink { uriPattern = "https://vidlynk-production.up.railway.app/watch/{slug}" },
+                navDeepLink { uriPattern = "http://vidlynk-production.up.railway.app/watch/{slug}" },
+                navDeepLink { uriPattern = "vidlynk://watch/{slug}" }
+            )
+        ) { backStackEntry ->
+            val incomingSlug = backStackEntry.arguments?.getString("slug")
             HomeScreen(
+                incomingSlug = incomingSlug,
                 onVideoSelected = { slug ->
                     navController.navigate(Screen.Player.createRoute(slug))
                 }
             )
         }
 
-        // Video Player Screen with Deep Links
+        // Video Player Screen
         composable(
             route = Screen.Player.route,
             arguments = listOf(
                 navArgument("slug") {
                     type = NavType.StringType
                 }
-            ),
-            deepLinks = listOf(
-                navDeepLink { uriPattern = "https://vidlynk.app/watch/{slug}" },
-                navDeepLink { uriPattern = "http://vidlynk.app/watch/{slug}" },
-                navDeepLink { uriPattern = "vidlynk://watch/{slug}" }
             )
         ) {
             val viewModel: VideoPlayerViewModel = hiltViewModel()
@@ -52,7 +65,7 @@ fun VidLynkNavGraph(
                 viewModel = viewModel,
                 onNavigateBack = {
                     if (!navController.popBackStack()) {
-                        navController.navigate(Screen.Home.route) {
+                        navController.navigate(Screen.Home.createRoute()) {
                             popUpTo(0)
                         }
                     }

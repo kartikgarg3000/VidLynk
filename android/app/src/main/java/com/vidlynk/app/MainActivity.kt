@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.vidlynk.app.ui.navigation.VidLynkNavGraph
 import com.vidlynk.app.ui.theme.VidLynkTheme
@@ -17,24 +18,27 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var exoPlayer: ExoPlayer
 
+    private var navController: NavHostController? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             VidLynkTheme {
-                val navController = rememberNavController()
+                val nav = rememberNavController()
+                navController = nav
                 VidLynkNavGraph(
-                    navController = navController,
+                    navController = nav,
                     exoPlayer = exoPlayer
                 )
             }
         }
     }
 
-    // ComponentActivity (Activity 1.9+) changed signature: no parameter
+    // ComponentActivity (Activity 1.9+) signature
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        // Passes new deep link intent when app is already in the backstack
         setIntent(intent)
+        navController?.handleDeepLink(intent)
     }
 
     override fun onDestroy() {

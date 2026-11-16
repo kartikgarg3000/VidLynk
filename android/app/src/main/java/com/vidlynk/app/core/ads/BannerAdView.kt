@@ -8,14 +8,12 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
-
-// Google AdMob Test Banner Unit ID
-private const val BANNER_TEST_UNIT_ID = "ca-app-pub-3940256099942544/6300978111"
+import com.vidlynk.app.BuildConfig
 
 @Composable
 fun BannerAdView(
     modifier: Modifier = Modifier,
-    adUnitId: String = BANNER_TEST_UNIT_ID
+    adUnitId: String = BuildConfig.ADMOB_BANNER_ID
 ) {
     AndroidView(
         modifier = modifier
